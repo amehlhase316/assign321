@@ -1,0 +1,61 @@
+syntax = "proto2";
+
+package operation;
+
+option java_package = "buffers";
+option java_outer_classname = "ResponseProtos";
+
+message Response {
+  enum ResponseType {
+    GREETING = 0; // Greeting the client after NAME request uses 'greeting' field
+    LEADER = 1; // showing the leader board after LEADER request -- 'leader' send back
+    PLAY = 2; // when the game is in play this is the response to NEW, TILE1, TILE2 -- details further below
+    WON = 4; // if all matches were found -- 'board' is send back 
+    BYE = 6; // when the client wants to quit in the menu -- 'message' send back to client
+  }
+
+// PLAY as answer to NEW
+  // board: current board
+  // err: false
+
+  // if error: true then also send good message
+  // if error then client should go back asking for first tile and send TILE1 to server
+
+// PLAY as answer to TILE1
+  // flippedBoard: the board with the one chosen tile unturned
+  // second: true since we now want the second tile to be send
+  // err: false
+
+  // if error: true then also send good message
+  // if error client should ask for second tile again and send TILE2 to server
+
+// PLAY as answer to TILE2
+  // flippedBoard: the board with the two chosen tiles unturned
+  // board: the board as it is with only found matches showing
+  // eval: true/false depending if it was a match or not
+  // err: false
+  
+  // if error: true then also send good message
+  // if some error happend game should go back to a the current board and start with first tile again
+
+
+  required ResponseType responseType = 1 [default = GREETING];
+
+  optional string greeting = 2; // answer to NAME request
+
+  repeated Entry leader = 3; // leaderboard send after LEADER request
+
+  optional string board = 5; // current board with found matches unturned
+  optional bool second = 6; // for when client answers TILE1 and now wants the second tile
+  optional string flippedBoard = 7; // board with the user chosen tiles unturned (answer to TILE1 and TILE2)
+  optional bool eval = 8; // for when both tiles were send this wil be true/false depending if it is a match
+  
+  optional bool err = 9;
+  optional string message = 10;
+}
+
+message Entry { // leader board entry
+  optional string name = 1; // name of the person
+  optional int32 wins = 2; // how many times that person won
+  optional int32 logins = 3; // how often that person logged in
+}
